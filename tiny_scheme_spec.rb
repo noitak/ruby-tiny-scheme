@@ -46,50 +46,112 @@ describe TinyScheme do
 
   end
 
-  describe '#eval' do
-    it 'リテラルはそのまま返す' do
-      program = TinyScheme::parse('123')
-      TinyScheme::eval(program, @global_env).should eq 123
-    end
-
-    it 'quote: 式をそのまま返す' do
-      program = TinyScheme::parse('(quote 123)')
-      TinyScheme::eval(program, @global_env).should eq 123
-
-      program = TinyScheme::parse('(quote (1 2 3))')
-      TinyScheme::eval(program, @global_env).should eq [1, 2, 3]
-    end
-
-    it '変数参照: 値を返す' do
-      program = TinyScheme::parse('(define hoge)')
-      TinyScheme::eval(program, @global_env)
-
-      program = TinyScheme::parse('(set! hoge 123)')
-      TinyScheme::eval(program, @global_env)
-
-      program = TinyScheme::parse('hoge')
-      TinyScheme::eval(program, @global_env).should eq 123
-    end
-
-    context '値を設定されてない変数' do
-      it '変数参照すると: nilを返す' do
-        program = TinyScheme::parse('(define hoge)')
-        TinyScheme::eval(program, @global_env)
-
-        program = TinyScheme::parse('hoge')
-        TinyScheme::eval(program, @global_env).should be_nil
+  describe 'Special Forms' do
+    describe '定数リテラル: number' do
+      it '数はそれ自身へと評価される' do
+        program = TinyScheme::parse('123')
+        TinyScheme::eval(program, @global_env).should eq 123
       end
     end
 
-    context 'define されていない変数' do
-      it '変数参照すると: NoMethodError' do
-        program = TinyScheme::parse('hoge')
-        lambda{TinyScheme::eval(program, @global_env)}.should raise_error(NoMethodError)
+    describe '定義: (define var exp)' do
+      it '最も内側の環境に新しい変数を定義し, 式expを評価した値を設定する' do
+        program = TinyScheme::parse('(define r 3)')
+        TinyScheme::eval(program, @global_env).should eq 3
+      end
+    end
+
+    describe '変数参照: var' do
+      it '変数の値を返す' do
+        program = TinyScheme::parse('(define r 3)')
+        TinyScheme::eval(program, @global_env).should eq 3
+
+        program = TinyScheme::parse('r')
+        TinyScheme::eval(program, @global_env).should eq 3
+      end
+
+      context '定義されていない変数の参照' do
+        it 'NoMethodError' do
+          program = TinyScheme::parse('X')
+          lambda{TinyScheme::eval(program, @global_env)}.should raise_error(NoMethodError)
+        end
+      end
+    end
+
+    describe '代入: (set! var exp)' do
+      it 'expを評価してその値をvarに割り当てる' do
+        program = TinyScheme::parse('(define r 3)')
+        TinyScheme::eval(program, @global_env).should eq 3
+
+        program = TinyScheme::parse('(set! r 123)')
+        TinyScheme::eval(program, @global_env).should eq 123
+
+        program = TinyScheme::parse('r')
+        TinyScheme::eval(program, @global_env).should eq 123
+      end
+
+      context '定義されていない変数への代入' do
+        it 'NoMethodError' do
+          program = TinyScheme::parse('(set! Y 123)')
+          lambda{TinyScheme::eval(program, @global_env)}.should raise_error(NoMethodError)
+        end
+      end
+    end
+
+    describe 'クオート: (quote exp)' do
+      it 'expを解釈せずにそのまま返す' do
+        program = TinyScheme::parse('(quote 123)')
+        TinyScheme::eval(program, @global_env).should eq 123
+
+        program = TinyScheme::parse('(quote (a b c))')
+        TinyScheme::eval(program, @global_env).should eq ['a', 'b', 'c']
+      end
+    end
+
+    describe '条件式: (if test conseq alt)' do
+      context 'testが真の場合' do
+        it 'conseqを返す' do
+          program = TinyScheme::parse('(if (< 10 20) (+ 1 1) (+ 3 3))')
+          TinyScheme::eval(program, @global_env).should eq 2
+        end
+      end
+      context 'testが偽の場合' do
+        it 'altを返す' do
+          program = TinyScheme::parse('(if (> 10 20) (+ 1 1) (+ 3 3))')
+          TinyScheme::eval(program, @global_env).should eq 6
+        end
+      end
+    end
+
+    describe '手続き: (lambda (var...) exp)' do
+      it 'var... を引数名, 式exp を本体とする手続きを作る' do
+        program = TinyScheme::parse('((lambda (x) (* x x)) 3)')
+        TinyScheme::eval(program, @global_env).should eq 9
+      end
+    end
+
+    describe '逐次式: (begin exp...)' do
+      it 'exp... のそれぞれの式を左から右へ評価していき, 最後の値を返す' do
+        program = TinyScheme::parse('(define x 123)')
+        TinyScheme::eval(program, @global_env)
+
+        program = TinyScheme::parse('(begin (set! x 1) (set! x (+ x 1)) (* x 2))')
+        TinyScheme::eval(program, @global_env).should eq 4
+      end
+    end
+
+    describe '手続き呼び出し: (proc exp...)' do
+      it 'procがSpecial Formsでない場合, 手続きとして扱われる' do
+        program = TinyScheme::parse('(define square (lambda (x) (* x x)))')
+        TinyScheme::eval(program, @global_env)
+
+        program = TinyScheme::parse('(square 12)')
+        TinyScheme::eval(program, @global_env).should eq 144
       end
     end
   end
 
-  describe '#eval: リスト操作' do
+  describe 'リスト操作' do
     context '1以上の長さのリスト' do
       it 'list: リストを生成する' do
         program = TinyScheme::parse('(list 1 2 3)')
@@ -160,7 +222,5 @@ describe TinyScheme do
         lambda{TinyScheme::eval(program, @global_env)}.should raise_error(TypeError)
       end
     end
-
   end
-
 end
