@@ -5,10 +5,7 @@ Ruby練習用Scheme インタープリター
 
 ## Example
 
-    $ irb
-    ruby :001 > require './tiny_scheme'
-     => true
-    ruby :002 > TinyScheme::repl
+    $ ruby repl.rb
     tiny_scheme > (car (list 1 2 3))
     1
     tiny_scheme > (cdr (list 1 2 3))
@@ -18,8 +15,7 @@ Ruby練習用Scheme インタープリター
     tiny_scheme > ((lambda (x) (* x x)) 3)
     9
     tiny_scheme > (exit)
-     => nil
-    ruby :003 >
+    $ 
 
 ## 参考
 * [((Pythonで) 書く (Lisp) インタプリタ)](http://www.aoky.net/articles/peter_norvig/lispy.htm)

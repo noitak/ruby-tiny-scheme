@@ -1,6 +1,6 @@
 # coding: utf-8
 
-require './tiny_scheme'
+require File.dirname(__FILE__) + '/tiny_scheme'
 
 describe TinyScheme do
   before do
