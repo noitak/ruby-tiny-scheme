@@ -77,8 +77,13 @@ module TinyScheme
     env
   end
 
-  def self.parse s
-    read_from(tokenize s)
+  def self.parse s, &block
+    program = read_from(tokenize s)
+    if block
+      block.call program
+    else
+      program
+    end
   end
 
   def self.tokenize s
@@ -131,8 +136,10 @@ module TinyScheme
       begin
         break if $_.chomp == '(exit)'
 
-        val = self.eval(self.parse($_.chomp), global_env)
-        puts to_string(val) if not val == nil
+        self.parse($_.chomp) do |program|
+          val = self.eval(program, global_env)
+          puts to_string(val) if not val == nil
+        end
       rescue => ex
         puts "#{ex.class}: #{ex.message}"
       end
