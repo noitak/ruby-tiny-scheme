@@ -12,11 +12,11 @@ describe TinyScheme do
       it '() --> []' do
         TinyScheme::parse('()').should eq []
       end
-      it '(hoge) --> ["hoge"]' do
-        TinyScheme::parse('(hoge)').should eq [:hoge]
+      it '(symbol) --> [:symbol]' do
+        TinyScheme::parse('(symbol)').should eq [:symbol]
       end
-      it '(foo bar 123) --> ["foo", "bar", 123]' do
-        TinyScheme::parse('(foo bar 123)').should eq [:foo, :bar, 123]
+      it '(symbol 123 "str") --> [:symbol, 123, "str"]' do
+        TinyScheme::parse('(symbol 123 "str")').should eq [:symbol, 123, "str"]
       end
     end
 
@@ -24,11 +24,11 @@ describe TinyScheme do
       it '(()) --> [[]]' do
         TinyScheme::parse('(())').should eq [[]]
       end
-      it '(hoge (123)) --> ["hoge", [123]]' do
-        TinyScheme::parse('(hoge (123))').should eq [:hoge, [123]]
+      it '(symbol (symbol 123, "str")) --> [:symbol, [symbol, 123, "str"]]' do
+        TinyScheme::parse('(symbol (123 "str"))').should eq [:symbol, [123, "str"]]
       end
-      it '(foo (bar (1 2 3))) --> ["foo", ["bar", [1, 2, 3]]]' do
-        TinyScheme::parse('(foo (bar (1 2 3)))').should eq [:foo, [:bar, [1, 2, 3]]]
+      it '(symbol (symbol (123 "str"))) --> [:symbol, [:symbol, [123, "str"]]]' do
+        TinyScheme::parse('(symbol (symbol (123 "str")))').should eq [:symbol, [:symbol, [123, "str"]]]
       end
     end
 
