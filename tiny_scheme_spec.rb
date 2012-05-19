@@ -13,10 +13,10 @@ describe TinyScheme do
         TinyScheme::parse('()').should eq []
       end
       it '(hoge) --> ["hoge"]' do
-        TinyScheme::parse('(hoge)').should eq ['hoge']
+        TinyScheme::parse('(hoge)').should eq [:hoge]
       end
       it '(foo bar 123) --> ["foo", "bar", 123]' do
-        TinyScheme::parse('(foo bar 123)').should eq ['foo', 'bar', 123]
+        TinyScheme::parse('(foo bar 123)').should eq [:foo, :bar, 123]
       end
     end
 
@@ -25,10 +25,10 @@ describe TinyScheme do
         TinyScheme::parse('(())').should eq [[]]
       end
       it '(hoge (123)) --> ["hoge", [123]]' do
-        TinyScheme::parse('(hoge (123))').should eq ['hoge', [123]]
+        TinyScheme::parse('(hoge (123))').should eq [:hoge, [123]]
       end
       it '(foo (bar (1 2 3))) --> ["foo", ["bar", [1, 2, 3]]]' do
-        TinyScheme::parse('(foo (bar (1 2 3)))').should eq ['foo', ['bar', [1, 2, 3]]]
+        TinyScheme::parse('(foo (bar (1 2 3)))').should eq [:foo, [:bar, [1, 2, 3]]]
       end
     end
 
@@ -113,8 +113,8 @@ describe TinyScheme do
           TinyScheme::eval(program, @global_env).should eq 123
         end
 
-        TinyScheme::parse('(quote (a b c))') do |program|
-          TinyScheme::eval(program, @global_env).should eq ['a', 'b', 'c']
+        TinyScheme::parse('(quote (1 2 3))') do |program|
+          TinyScheme::eval(program, @global_env).should eq [1, 2, 3]
         end
       end
     end

@@ -7,33 +7,33 @@ module TinyScheme
   def self.eval x, env
     # 環境の中で式を評価する
 
-    if x.instance_of? String
+    if x.instance_of? Symbol
       # 変数参照
       env.find(x)[x]
     elsif not x.instance_of? Array
       # リテラル
       x
-    elsif x.first == 'quote'
+    elsif x.first == :quote
       # (quote exp)
       (_, exp) = x
       exp
-    elsif x.first == 'if'
+    elsif x.first == :if
       # (if test conseq alt)
       (_, test, conseq, alt) = x
       eval((eval(test, env) ? conseq : alt), env)
-    elsif x.first == 'set!'
+    elsif x.first == :set!
       # (set! var exp)
       (_, var, exp) = x
       env.find(var)[var] = eval(exp, env)
-    elsif x.first == 'define'
+    elsif x.first == :define
       # (define var exp)
       (_, var, exp) = x
       env[var] = eval(exp, env)
-    elsif x.first == 'lambda'
+    elsif x.first == :lambda
       # (lambda (var*) exp)
       (_, var, exp) = x
       ->(*args){ eval(exp, Env.new(var, args, env)) }
-    elsif x.first == 'begin'
+    elsif x.first == :begin
       # (begin exp*)
       val = nil
       x.shift
@@ -54,26 +54,26 @@ module TinyScheme
 
   def self.add_globals env
     # 環境にScheme標準の手続きをいくつか追加する
-    env['+'] = ->(a, b){ a + b }
-    env['-'] = ->(a, b){ a - b }
-    env['*'] = ->(a, b){ a * b }
-    env['/'] = ->(a, b){ a / b }
-    env['>'] = ->(a, b){ a > b }
-    env['<'] = ->(a, b){ a < b }
-    env['>='] = ->(a, b){ a >= b }
-    env['<='] = ->(a, b){ a <= b }
-    env['='] = ->(a, b){ a == b }
-    env['equal?'] = ->(a, b){ a == b }
-    env['eq?'] = ->(a, b){ a == b }
-    env['length'] = ->(lst){ lst.length }
-    env['cons'] = ->(a, b){ [a].concat(b) }
-    env['car'] = ->(lst){ lst[0] }
-    env['cdr'] = ->(lst){ lst.slice(1, lst.length - 1) }
-    env['append'] = ->(a, b){ a.concat b }
-    env['list'] = ->(*x){ [*x] }
-    env['list?'] = ->(x){ x.instance_of? Array }
-    env['null?'] = ->(x){ x == nil }
-    env['symbol?'] = ->(x){ x.instance_of? String }
+    env['+'.to_sym] = ->(a, b){ a + b }
+    env['-'.to_sym] = ->(a, b){ a - b }
+    env['*'.to_sym] = ->(a, b){ a * b }
+    env['/'.to_sym] = ->(a, b){ a / b }
+    env['>'.to_sym] = ->(a, b){ a > b }
+    env['<'.to_sym] = ->(a, b){ a < b }
+    env['>='.to_sym] = ->(a, b){ a >= b }
+    env['<='.to_sym] = ->(a, b){ a <= b }
+    env['='.to_sym] = ->(a, b){ a == b }
+    env['equal?'.to_sym] = ->(a, b){ a == b }
+    env['eq?'.to_sym] = ->(a, b){ a == b }
+    env['length'.to_sym] = ->(lst){ lst.length }
+    env['cons'.to_sym] = ->(a, b){ [a].concat(b) }
+    env['car'.to_sym] = ->(lst){ lst[0] }
+    env['cdr'.to_sym] = ->(lst){ lst.slice(1, lst.length - 1) }
+    env['append'.to_sym] = ->(a, b){ a.concat b }
+    env['list'.to_sym] = ->(*x){ [*x] }
+    env['list?'.to_sym] = ->(x){ x.instance_of? Array }
+    env['null?'.to_sym] = ->(x){ x == nil }
+    env['symbol?'.to_sym] = ->(x){ x.instance_of? String }
     env
   end
 
@@ -110,7 +110,7 @@ module TinyScheme
   def self.atom token
     return token.to_i if not token =~ /\D/
     return token.to_f if not token.gsub('.', '') =~ /\D/
-    token
+    token.to_sym
   end
 
   class Env < Hash
