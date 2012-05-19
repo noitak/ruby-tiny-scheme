@@ -108,6 +108,8 @@ module TinyScheme
   end
 
   def self.atom token
+    return true if token == '#t'
+    return false if token == '#f'
     return token.to_i if not token =~ /\D/
     return token.to_f if not token.gsub('.', '') =~ /\D/
     token.to_sym
@@ -149,7 +151,11 @@ module TinyScheme
   end
 
   def self.to_string exp
-    if exp.instance_of? Array
+    if exp == true
+      '#t'
+    elsif exp == false
+      '#f'
+    elsif exp.instance_of? Array
       "(#{exp.map{|e| to_string(e)}.join(' ')})"
     else
       exp.to_s
